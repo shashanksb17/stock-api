@@ -62,10 +62,52 @@ async function fetchAllStockPrices() {
 // API endpoint
 app.get('/api/stocks', async (req, res) => {
     try {
+        const query = req.query;
+        const investment = query?.investment ? parseFloat(query.investment) : null;
+        
+        // Input validation
+        if (investment !== null && (isNaN(investment) || investment <= 0)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Investment amount must be a positive number'
+            });
+        }
+
         const stockData = await fetchAllStockPrices();
+
+        // Calculate allocated quantities if investment is provided
+        const enhancedStockData = stockData.map(stock => {
+            let allocatedQuantity = null;
+            let allocatedAmount = null;
+
+            // Only calculate if investment is provided and price is valid
+            if (investment && stock.last_traded_price !== 'N/A' && !isNaN(stock.last_traded_price)) {
+
+                allocatedAmount = +(investment * (stock.allocation_percentage / 100)).toFixed(0);
+                allocatedQuantity = Math.ceil(allocatedAmount / stock.last_traded_price);
+            }
+
+
+            console.log({
+                stock: stock.stock_name,
+                allocation_percentage: stock.allocation_percentage,
+                investment: investment,
+                last_traded_price: stock.last_traded_price,
+                allocatedAmount: allocatedAmount,
+                allocatedQuantity: allocatedQuantity
+            });
+
+            return {
+                ...stock,
+                allocated_quantity: allocatedQuantity,
+                allocated_amount: allocatedAmount
+            };
+        });
+
         res.json({
             success: true,
-            data: stockData,
+            data: enhancedStockData,
+            investment_amount: investment,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
