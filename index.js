@@ -4,6 +4,8 @@ const yahooFinance = require('yahoo-finance2').default;
 const app = express();
 const port = process.env.PORT || 8000;
 
+app.use(cors())
+
 const stocks = [
     { ticker: 'BHARTIARTL.NS', label: 'Bharti Airtel Limited', allocation_percentage: 4.4 },
     { ticker: 'BIRET.BO', label: 'Brookfield India Real Estate Trust', allocation_percentage: 7.87 },
