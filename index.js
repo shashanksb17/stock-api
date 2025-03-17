@@ -4,7 +4,21 @@ const yahooFinance = require('yahoo-finance2').default;
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(cors())
+// app.use(cors())
+const allowedOrigins = ['http://localhost:3001','https://www.creddinv.in']; // Add more specific origins here if needed
+
+// Configure CORS dynamically
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g., curl, Postman) or if origin is in allowed list
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, origin); // Reflect the requesting origin
+    } else {
+      // Allow all other origins with '*'
+      callback(null, '*');
+    }
+  }
+}));
 
 const stocks = [
     { ticker: 'BHARTIARTL.NS', label: 'Bharti Airtel Limited', allocation_percentage: 4.4 },
